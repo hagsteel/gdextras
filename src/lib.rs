@@ -1,5 +1,6 @@
 pub mod controls;
 pub mod movement;
+pub mod mouse;
 
 #[macro_export]
 macro_rules! gd_unimplemented { 

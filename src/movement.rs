@@ -6,13 +6,21 @@ pub const UP3D: Vector3 = Vector3::new(0.0, 1.0, 0.0);
 // -----------------------------------------------------------------------------
 //     - Move and slide -
 // -----------------------------------------------------------------------------
+/// Move and slide for 2D nodes
 pub trait MoveAndSlide2D {
+    /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;
+
+    /// Apply gravity
     fn apply_gravity(&self, gravity: f32, velocity: &mut Vector2);
 }
 
+/// Move and slide for 3D nodes
 pub trait MoveAndSlide3D {
+    /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector3, up: Vector3) -> Vector3;
+
+    /// Apply gravity
     fn apply_gravity(&self, gravity: f32, velocity: &mut Vector3);
 }
 
@@ -77,6 +85,11 @@ impl MoveAndSlide3D for KinematicBody {
 // -----------------------------------------------------------------------------
 //     - Rotation 2D -
 // -----------------------------------------------------------------------------
+/// Rotation for 2D nodes.
+/// Calling `look_at` is just shorthand for calling `look_at` on the selected Node2D.
+///
+/// `set_rotation` takes four positive values, so a combination of inpux axis strenghts
+/// can be used.
 pub struct Rotation2D {
     aim_direction: Option<Vector2>,
     owner: Node2D,
@@ -96,9 +109,16 @@ impl Rotation2D {
         let dir = Vector2::new(-left + right, -up + down);
         if dir == Vector2::zero() {
             self.aim_direction = None;
-            return
+            return;
         }
         self.aim_direction = Some(dir);
+    }
+
+    pub fn follow_mouse(&mut self) {
+        unsafe {
+            let mouse_pos = self.owner.get_global_mouse_position();
+            self.owner.look_at(mouse_pos);
+        }
     }
 
     pub unsafe fn update_rotation(&mut self) -> Option<()> {
@@ -110,8 +130,7 @@ impl Rotation2D {
     }
 }
 
-pub struct MouseAim2D {
-}
+pub struct MouseAim2D {}
 
 // -----------------------------------------------------------------------------
 //     - Rotation 3D -
