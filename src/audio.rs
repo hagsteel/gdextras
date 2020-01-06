@@ -1,5 +1,32 @@
-use super::some_or_bail;
 use gdnative::*;
+use std::collections::HashMap;
+use std::hash::Hash;
+
+use crate::{gd_err, some_or_bail};
+
+pub struct SoundBank<T> {
+    inner: HashMap<T, AudioStream>,
+}
+
+impl<T: Eq + Hash> SoundBank<T> {
+    pub fn insert(&mut self, key: T, path: &str) {
+        let stream = some_or_bail!(load_audio_stream(path.into()), "");
+        self.inner.insert(key, stream);
+    }
+
+    pub fn new() -> Self {
+        Self {
+            inner: HashMap::new(),
+        }
+    }
+
+    pub fn get(&self, key: T) -> Option<AudioStream> {
+        match self.inner.get(&key) {
+            Some(s) => Some(s.clone()),
+            None => None
+        }
+    }
+}
 
 /// Load an audio file.
 /// E.g
@@ -13,10 +40,27 @@ pub fn load_audio_stream(path: &str) -> Option<AudioStream> {
         .cast::<AudioStream>()
 }
 
+pub fn load_and_play(mut owner: Node, stream: AudioStream) {
+    let audio_player = Instance::<AudioPlayer>::new();
+    let player_node = *audio_player.base();
+
+    unsafe {
+        owner.add_child(Some(player_node), false);
+        let _ = audio_player
+            .script()
+            .map(|player| {
+                player.play_sound(stream);
+            })
+            .map_err(|e| {
+                gd_err!("Failed to play sound: {:?}", e);
+            });
+    }
+}
+
 // -----------------------------------------------------------------------------
 //     - Audio player -
 // -----------------------------------------------------------------------------
-#[derive(NativeClass)]
+#[derive(Debug, NativeClass)]
 #[inherit(Node)]
 pub struct AudioPlayer {
     audio_stream_player: Option<AudioStreamPlayer>,
@@ -53,10 +97,22 @@ impl AudioPlayer {
     }
 
     #[export]
-    pub fn _ready(&mut self, owner: Node) {
+    pub fn _ready(&mut self, mut owner: Node) {
+        godot_print!("{:?}", "Audio getting ready");
+        let audio_stream_player = AudioStreamPlayer::new();
+
         unsafe {
+            owner.add_child(Some(audio_stream_player.to_node()), false);
+            self.audio_stream_player = match owner.get_child(0) {
+                Some(player) => player.cast::<AudioStreamPlayer>(),
+                None => {
+                    gd_err!("Failed to get audio stream player");
+                    return;
+                }
+            };
+
             let audio_node = some_or_bail!(
-                owner.get_node("AudioStreamPlayer".into()),
+                owner.get_child(0),
                 "No audio stream player. Add a child node of this of the type `AudioStreamPlayer`"
             );
 
@@ -71,19 +127,15 @@ impl AudioPlayer {
         }
     }
 
-    pub fn play_sound(&self, audio_stream: Option<AudioStream>) {
+    pub fn play_sound(&self, audio_stream: AudioStream) {
+        godot_print!("{:?}", "play sound called");
         let mut audio_stream_player = some_or_bail!(
             self.audio_stream_player,
             "No audio stream player assigned to this node (check node names)"
         );
 
-        if audio_stream.is_none() {
-            // globals.created_audio.remove(globals.created_audio.find(self));
-            return;
-        }
-
         unsafe {
-            audio_stream_player.set_stream(audio_stream);
+            audio_stream_player.set_stream(Some(audio_stream));
             audio_stream_player.play(0.0);
         }
     }
@@ -95,33 +147,13 @@ impl AudioPlayer {
         unsafe {
             if self.should_loop {
                 // Play again
-                self.audio_stream_player.unwrap().play(0.0);
+                self.audio_stream_player.map(|mut player| player.play(0.0));
             } else {
-                self.audio_stream_player.unwrap().stop();
+                self.audio_stream_player.map(|mut player| player.stop());
                 owner.queue_free();
-                // globals.created_audio.remove(globals.created_audio.find(self));
             }
         }
     }
 }
 
 unsafe impl Send for AudioPlayer {}
-
-// -----------------------------------------------------------------------------
-//     - Audio singleton -
-// -----------------------------------------------------------------------------
-#[derive(NativeClass)]
-#[inherit(Node)]
-pub struct AudioSingleton {}
-
-#[methods]
-impl AudioSingleton {
-    pub fn _init(_owner: Node) -> Self {
-        Self {}
-    }
-
-    #[export]
-    pub fn _ready(&self, _owner: Node) {
-        godot_print!("Audio singleton ready");
-    }
-}
