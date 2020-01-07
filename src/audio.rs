@@ -10,7 +10,6 @@
 //! // world.rs
 //! use gdextras::audio::{play_audio_stream, SoundBank}
 //!
-//!
 //! #[derive(NativeClass)]
 //! #[inherit(Node2D)]
 //! pub struct World {
@@ -113,49 +112,6 @@ pub fn play_audio_stream(mut owner: Node, stream: AudioStream) {
 //     - Audio player -
 // -----------------------------------------------------------------------------
 /// Audio player node.
-/// Example usage:
-///
-/// // lib.rs
-/// fn init(handle: init::InitHandle) {
-///     handle.add_class::<gdextras::audio::Player>();
-/// }
-///
-/// // world.rs
-/// use gdextras::audio::{play_audio_stream, load_audio_stream, SoundBank}
-///
-///
-/// #[derive(NativeClass)]
-/// #[inherit(Node2D)]
-/// pub struct World {
-///    sfx_map: SoundBank<Sound>,
-/// }
-///
-/// #[methods]
-/// impl World {
-///     pub fn _init(_owner: Node2D) -> Self {
-///         Self {
-///             sfx_map: SoundBank::new(),
-///         }
-///     }
-///
-///     #[export]
-///     pub fn _ready(&mut self, owner: Node2D) {
-///         self.sfx_map.insert(Sound::Gunshot, "res://sfx/gunshot.wav");
-///         self.sfx_map.insert(Sound::Rifle, "res://sfx/gun_rifle_sniper_shot_01.wav");
-///     }
-///
-///     pub fn play_audio(&self, owner: Node2D, sound: Sound) -> Option<()> {
-///         let stream = self.sfx_map.get(sound)?;
-///         unsafe {
-///             play_audio_stream(owner.to_node(), stream);
-///         }
-///
-///         Some(())
-///     }
-/// }
-///
-///
-///
 #[derive(Debug, NativeClass)]
 #[inherit(AudioStreamPlayer)]
 pub struct AudioPlayer {
