@@ -7,6 +7,19 @@ pub const UP3D: Vector3 = Vector3::new(0.0, 1.0, 0.0);
 //     - Move and slide -
 // -----------------------------------------------------------------------------
 /// Move and slide for 2D nodes
+/// Example:
+/// pub fn _unhandled_input(&mut self, owner: KinematicBody2D, event: InputEvent) {
+///     let input = Input::godot_singleton();
+///     self.velocity = Vector2::zero();
+///     self.velocity.x -= input.strength_mul("ui_left", SPEED);
+///     self.velocity.x += input.strength_mul("ui_right", SPEED);
+///     self.velocity.y -= input.strength_mul("ui_up", SPEED);
+///     self.velocity.y += input.strength_mul("ui_down", SPEED);
+/// }
+///
+/// fn _physics_process(&mut self, mut owner, delta: f64) {
+///     self.velocity = owner.move_and_slide_default(self.velocity, UP2D);
+/// }
 pub trait MoveAndSlide2D {
     /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;

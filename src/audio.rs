@@ -1,16 +1,19 @@
+//! Audio helper
+//! 
 use gdnative::*;
 use std::collections::HashMap;
 use std::hash::Hash;
 
 use crate::{gd_err, some_or_bail};
 
+/// Convenience storage for AudioStreams.
 pub struct SoundBank<T> {
     inner: HashMap<T, AudioStream>,
 }
 
 impl<T: Eq + Hash> SoundBank<T> {
     pub fn insert(&mut self, key: T, path: &str) {
-        let stream = some_or_bail!(load_audio_stream(path.into()), "");
+        let stream = some_or_bail!(load_audio_stream(path.into()), "Failed to load audio stream: {}", path);
         self.inner.insert(key, stream);
     }
 
@@ -30,7 +33,7 @@ impl<T: Eq + Hash> SoundBank<T> {
 
 /// Load an audio file.
 /// E.g
-/// ```
+/// ```ignore
 /// load_audio_stream("res://sfx/ping.wav");
 /// ```
 pub fn load_audio_stream(path: &str) -> Option<AudioStream> {
@@ -40,7 +43,8 @@ pub fn load_audio_stream(path: &str) -> Option<AudioStream> {
         .cast::<AudioStream>()
 }
 
-pub fn load_and_play(mut owner: Node, stream: AudioStream) {
+/// Play an audio stream.
+pub fn play_audio_stream(mut owner: Node, stream: AudioStream) {
     let audio_player = Instance::<AudioPlayer>::new();
     let player_node = *audio_player.base();
 

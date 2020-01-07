@@ -3,6 +3,7 @@ pub mod controls;
 pub mod movement;
 pub mod mouse;
 pub mod audio;
+pub mod scene_loader;
 
 #[macro_export]
 macro_rules! gd_unimplemented { 
@@ -48,4 +49,3 @@ macro_rules! some_or_bail {
         }
     });
 }
-
