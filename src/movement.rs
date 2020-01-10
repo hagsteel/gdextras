@@ -1,7 +1,7 @@
 use gdnative::{KinematicBody, KinematicBody2D, Node2D, Vector2, Vector3};
 
-pub const UP2D: Vector2 = Vector2::new(0.0, 1.0);
-pub const UP3D: Vector3 = Vector3::new(0.0, 1.0, 0.0);
+pub const UP2D: Vector2 = Vector2::new(0.0, -1.0);
+pub const UP3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
 
 // -----------------------------------------------------------------------------
 //     - Move and slide -

@@ -44,7 +44,7 @@ impl InputEventExt for InputEvent {
     }
 
     fn pressed(&self, key: &str) -> bool {
-        self.is_action_pressed(key.into())
+        self.is_action_pressed(key.into(), false)
     }
 
     fn released(&self, key: &str) -> bool {
