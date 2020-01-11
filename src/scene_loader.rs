@@ -1,3 +1,15 @@
+//! # Scene loader
+//!
+//! This requires the `SceneLoader` to be added to the root node, 
+//! and named "SceneLoader".
+//! This is still a work in progress.
+//!
+//! ```ignore
+//! with_scene_loader!( owner, |loader, node| {
+//!     loader.change_scene(node, "res://World.tscn");
+//! });
+//! ```
+//!
 use crate::{gd_err, some_or_bail};
 use gdnative::*;
 
@@ -67,6 +79,7 @@ impl SceneLoader {
                 root.get_child(root.get_child_count() - 1),
                 "failed to get current scene"
             );
+            godot_print!("dropping: {:?}", current_scene.get_name());
             current_scene.queue_free();
         }
     }
@@ -86,7 +99,14 @@ impl SceneLoader {
                 self.update_progress(total, current);
             }
             Err(GodotError::FileEof) => {
-                unsafe { owner.set_process(false) }
+                unsafe { 
+                    owner.set_process(false);
+                    let tree = some_or_bail!(owner.get_tree(), "failed to get scene tree");
+                    let mut root = some_or_bail!(tree.get_root(), "failed to get root node");
+                    let resource = some_or_bail!(loader.inner.get_resource(), "failed to get resource");
+                    let scene = some_or_bail!(resource.cast::<PackedScene>(), "failed to cast resource to packed scene");
+                    root.add_child(scene.instance(0), true);
+                }
             }
             Err(e) => {
                 unsafe { owner.set_process(false) }
