@@ -9,7 +9,6 @@
 //!     loader.change_scene(node, "res://World.tscn");
 //! });
 //! ```
-//!
 use crate::{gd_err, some_or_bail};
 use gdnative::*;
 
@@ -31,7 +30,7 @@ macro_rules! with_scene_loader {
 }
 
 
-struct Loader {
+pub struct Loader {
     inner: ResourceInteractiveLoader,
 }
 
@@ -42,6 +41,22 @@ impl Loader {
         Some(Self {
             inner: loader.load_interactive(path.into(), "PackedScene".into())?,
         })
+    }
+
+    pub fn poll(&mut self) -> Result<(), gdnative::GodotError> {
+        self.inner.poll()
+    }
+
+    pub fn get_stage(&self) -> i64 {
+        self.inner.get_stage()
+    }
+
+    pub fn get_stage_count(&self) -> i64 {
+        self.inner.get_stage_count()
+    }
+
+    pub fn get_resource(&mut self) -> Option<Resource> {
+        self.inner.get_resource()
     }
 }
 
@@ -79,7 +94,7 @@ impl SceneLoader {
                 root.get_child(root.get_child_count() - 1),
                 "failed to get current scene"
             );
-            godot_print!("dropping: {:?}", current_scene.get_name());
+
             current_scene.queue_free();
         }
     }

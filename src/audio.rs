@@ -93,7 +93,6 @@ pub fn load_audio_stream(path: &str) -> Option<AudioStream> {
 /// The audio stream will free and remove it self once done playing.
 pub fn play_audio_stream(mut owner: Node, stream: AudioStream) {
     let audio_player = Instance::<AudioPlayer>::new();
-    godot_print!("{:?}", "sop");
     let player_node = *audio_player.base();
 
     unsafe {
@@ -159,8 +158,6 @@ impl AudioPlayer {
 
     #[export]
     pub fn on_sound_finished(&self, mut owner: AudioStreamPlayer) {
-        godot_print!("{:?}", "sound finished");
-
         unsafe {
             if self.should_loop {
                 // Play again
