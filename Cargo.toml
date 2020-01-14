@@ -10,4 +10,3 @@ edition = "2018"
 # gdnative = "0.7.0"
 gdnative = { path = "../godot-rust/gdnative" }
 rayon = "1.3.0"
-
