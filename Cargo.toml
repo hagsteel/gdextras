@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 # gdnative = "0.7.0"
-gdnative = { path = "../godot-rust/gdnative" }
+gdnative = { git = "https://github.com/hagsteel/godot-rust" }
 rayon = "1.3.0"
