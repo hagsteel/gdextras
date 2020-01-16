@@ -1,4 +1,4 @@
-use gdnative::{KinematicBody, KinematicBody2D, Node2D, Vector2, Vector3};
+use gdnative::{KinematicBody, KinematicBody2D, Node2D, Vector2, Vector3, KinematicCollision2D};
 
 pub const UP2D: Vector2 = Vector2::new(0.0, -1.0);
 pub const UP3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
@@ -20,16 +20,16 @@ pub const UP3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
 /// fn _physics_process(&mut self, mut owner, delta: f64) {
 ///     self.velocity = owner.move_and_slide_default(self.velocity, UP2D);
 /// }
-pub trait MoveAndSlide2D {
+pub trait Move2D {
     /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;
 
-    /// Apply gravity
-    fn apply_gravity(&self, gravity: f32, velocity: &mut Vector2);
+    /// Default implementation of move_and_collide.
+    fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D>;
 }
 
 /// Move and slide for 3D nodes
-pub trait MoveAndSlide3D {
+pub trait Move3D {
     /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector3, up: Vector3) -> Vector3;
 
@@ -40,7 +40,7 @@ pub trait MoveAndSlide3D {
 // -----------------------------------------------------------------------------
 //     - Kinetmatic body 2D -
 // -----------------------------------------------------------------------------
-impl MoveAndSlide2D for KinematicBody2D {
+impl Move2D for KinematicBody2D {
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2 {
         unsafe {
             let stop_on_slope = false;
@@ -59,9 +59,14 @@ impl MoveAndSlide2D for KinematicBody2D {
         }
     }
 
-    fn apply_gravity(&self, gravity: f32, velocity: &mut Vector2) {
-        if !unsafe { self.is_on_floor() } {
-            velocity.y += 1.0 * gravity;
+    fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D> {
+        unsafe {
+            self.move_and_collide(
+                velocity,
+                true,  // infinite intertia
+                true,  // exclude raycsat shapes
+                false, // test only
+            )
         }
     }
 }
@@ -69,7 +74,7 @@ impl MoveAndSlide2D for KinematicBody2D {
 // -----------------------------------------------------------------------------
 //     - Kinetmatic body 3D -
 // -----------------------------------------------------------------------------
-impl MoveAndSlide3D for KinematicBody {
+impl Move3D for KinematicBody {
     fn move_and_slide_default(&mut self, velocity: Vector3, up: Vector3) -> Vector3 {
         unsafe {
             let stop_on_slope = false;
