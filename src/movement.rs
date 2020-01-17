@@ -1,7 +1,9 @@
 use gdnative::{KinematicBody, KinematicBody2D, Node2D, Vector2, Vector3, KinematicCollision2D};
 
-pub const UP2D: Vector2 = Vector2::new(0.0, -1.0);
-pub const UP3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
+pub const UP_2D: Vector2 = Vector2::new(0.0, -1.0);
+pub const DOWN_2D: Vector2 = Vector2::new(0.0, 1.0);
+
+pub const UP_3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
 
 // -----------------------------------------------------------------------------
 //     - Move and slide -
@@ -23,6 +25,9 @@ pub const UP3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
 pub trait Move2D {
     /// Default implementation of move_and_slide.
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;
+
+    // Default implementation for move_and_slide_with_snap
+    fn move_and_slide_with_snap_default(&mut self, velocity: Vector2, snap: Vector2, up: Vector2) -> Vector2;
 
     /// Default implementation of move_and_collide.
     fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D>;
@@ -50,6 +55,25 @@ impl Move2D for KinematicBody2D {
 
             self.move_and_slide(
                 velocity,
+                up,
+                stop_on_slope,
+                max_slides,
+                floor_max_angle,
+                infinite_inertia,
+            )
+        }
+    }
+
+    fn move_and_slide_with_snap_default(&mut self, velocity: Vector2, snap: Vector2, up: Vector2) -> Vector2 {
+        unsafe {
+            let stop_on_slope = false;
+            let max_slides = 4;
+            let floor_max_angle = 0.785398;
+            let infinite_inertia = true;
+
+            self.move_and_slide_with_snap(
+                velocity,
+                snap,
                 up,
                 stop_on_slope,
                 max_slides,
