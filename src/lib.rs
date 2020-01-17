@@ -1,5 +1,5 @@
 #![allow(unused_parens)]
-pub mod controls;
+pub mod input;
 pub mod movement;
 pub mod mouse;
 pub mod audio;
