@@ -11,8 +11,9 @@ pub trait NodeExt : GodotObject + Clone
         U: NativeClass<Base = T, UserData = V>,
         F: FnMut(&mut U, T),
     {
-        let node = self.get_and_cast::<U::Base>(path.into()).unwrap();
-        let _ = Instance::<U>::try_from_base(node).unwrap().map_mut(f);
+        self.get_and_cast::<U::Base>(path.into()).map(|node| {
+            let _ = Instance::<U>::try_from_base(node).unwrap().map_mut(f);
+        });
     }
 }
 
