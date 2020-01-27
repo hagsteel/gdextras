@@ -1,4 +1,13 @@
-use gdnative::{KinematicBody, KinematicBody2D, Node2D, Vector2, Vector3, KinematicCollision2D};
+use gdnative::{
+    KinematicBody, KinematicBody2D, KinematicCollision2D, Node2D, Spatial, Vector2, Vector3,
+    Viewport
+};
+
+use euclid::{Transform3D, UnknownUnit, Angle};
+use euclid::Rotation3D as Rot3D;
+
+type Transform3 = Transform3D<f32, UnknownUnit, UnknownUnit>;
+type Rotation3 = Rot3D<f32, UnknownUnit, UnknownUnit>;
 
 pub const UP_2D: Vector2 = Vector2::new(0.0, -1.0);
 pub const DOWN_2D: Vector2 = Vector2::new(0.0, 1.0);
@@ -27,7 +36,12 @@ pub trait Move2D {
     fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;
 
     // Default implementation for move_and_slide_with_snap
-    fn move_and_slide_with_snap_default(&mut self, velocity: Vector2, snap: Vector2, up: Vector2) -> Vector2;
+    fn move_and_slide_with_snap_default(
+        &mut self,
+        velocity: Vector2,
+        snap: Vector2,
+        up: Vector2,
+    ) -> Vector2;
 
     /// Default implementation of move_and_collide.
     fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D>;
@@ -64,7 +78,12 @@ impl Move2D for KinematicBody2D {
         }
     }
 
-    fn move_and_slide_with_snap_default(&mut self, velocity: Vector2, snap: Vector2, up: Vector2) -> Vector2 {
+    fn move_and_slide_with_snap_default(
+        &mut self,
+        velocity: Vector2,
+        snap: Vector2,
+        up: Vector2,
+    ) -> Vector2 {
         unsafe {
             let stop_on_slope = false;
             let max_slides = 4;
@@ -86,8 +105,7 @@ impl Move2D for KinematicBody2D {
     fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D> {
         unsafe {
             self.move_and_collide(
-                velocity,
-                true,  // infinite intertia
+                velocity, true,  // infinite intertia
                 true,  // exclude raycsat shapes
                 false, // test only
             )
@@ -172,11 +190,62 @@ impl Rotation2D {
     }
 }
 
-pub struct MouseAim2D {}
-
 // -----------------------------------------------------------------------------
 //     - Rotation 3D -
 // -----------------------------------------------------------------------------
+
+// Get the X, Y and Z direction from a transform
+fn transform_to_x_y_z_direction(trans: Transform3) -> (Vector3, Vector3, Vector3) {
+    let cols = trans.to_column_arrays();
+    let v1 = Vector3::new(cols[0][0], cols[0][1], cols[0][2]);
+    let v2 = Vector3::new(cols[1][0], cols[1][1], cols[1][2]);
+    let v3 = Vector3::new(cols[2][0], cols[2][1], cols[2][2]);
+
+    (v1, v2, v3)
+}
+
 pub struct Rotation3D {
-    pub aim_direction: Option<Vector3>,
+    owner: Spatial,
+    look_at_vec: Vector3,
+}
+
+fn vec2_to_3(vec2: Vector2, vec3: Vector3) -> Vector3 {
+    Vector3::new(vec2.x, 0.0, vec2.y) + vec3
+}
+
+impl Rotation3D {
+    pub fn new(owner: Spatial) -> Self {
+        Self {
+            owner,
+            look_at_vec: Vector3::zero(),
+        }
+    }
+
+    pub fn look_dir(&mut self, look_dir: Vector3) {
+        if look_dir == Vector3::zero() {
+            return
+        }
+
+        unsafe {
+            let current_rot = self.owner.get_rotation();
+            let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
+
+            let angle = Angle::radians(look_dir.x.atan2(look_dir.z));
+            let new_rot = Rotation3::around_y(angle);
+
+            // Implement smooth rotation
+
+            // Instant rotation
+            let new_transform = new_rot.to_transform();
+
+            let (x, y, z) = transform_to_x_y_z_direction(new_transform);
+
+            let mut current_transform = self.owner.get_transform();
+            current_transform.basis.elements[0] = x;
+            current_transform.basis.elements[1] = y;
+            current_transform.basis.elements[2] = z;
+
+            self.owner.set_transform(current_transform);
+        }
+    }
 }
