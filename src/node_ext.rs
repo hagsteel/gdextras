@@ -1,5 +1,8 @@
-use gdnative::{GodotObject, Instance, MapMut, NativeClass, Node, UserData, Camera, Variant};
 use crate::gd_err;
+use gdnative::{
+    Camera, GodotObject, Instance, MapMut, NativeClass, Node, UserData, Variant, KinematicBody,
+    Particles
+};
 
 pub trait NodeExt: GodotObject + Clone {
     fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U>;
@@ -29,14 +32,14 @@ pub trait NodeExt: GodotObject + Clone {
         U: NativeClass<Base = Self, UserData = V>,
         F: FnMut(&mut U, Self),
     {
-            match Instance::<U>::try_from_base(self) {
-                Some(instance) => {
-                    if let Err(e) = instance.map_mut(f) {
-                        gd_err!("{:?}", e);
-                    }
+        match Instance::<U>::try_from_base(self) {
+            Some(instance) => {
+                if let Err(e) = instance.map_mut(f) {
+                    gd_err!("{:?}", e);
                 }
-                None => gd_err!("failed to get instance"),
             }
+            None => gd_err!("failed to get instance"),
+        }
     }
 
     fn deferred(&mut self, func_name: &str, args: &[Variant]);
@@ -58,38 +61,10 @@ macro_rules! node_ext {
                 }
             }
         }
-    }
+    };
 }
 
 node_ext!(Node);
 node_ext!(Camera);
-
-// impl NodeExt for Node {
-//     fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U> {
-//         unsafe {
-//             let node = self.get_node(path.into())?;
-//             node.cast::<U>()
-//         }
-//     }
-
-//     fn deferred(&mut self, func_name: &str, args: &[Variant]) {
-//         unsafe {
-//             self.call_deferred(func_name.into(), args);
-//         }
-//     }
-// }
-
-// impl NodeExt for Camera {
-//     fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U> {
-//         unsafe {
-//             let node = self.get_node(path.into())?;
-//             node.cast::<U>()
-//         }
-//     }
-
-//     fn deferred(&mut self, func_name: &str, args: &[Variant]) {
-//         unsafe {
-//             self.call_deferred(func_name.into(), args);
-//         }
-//     }
-// }
+node_ext!(KinematicBody);
+node_ext!(Particles);

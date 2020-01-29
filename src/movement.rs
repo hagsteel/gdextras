@@ -7,7 +7,7 @@ use euclid::{Transform3D, UnknownUnit, Angle};
 use euclid::Rotation3D as Rot3D;
 
 type Transform3 = Transform3D<f32, UnknownUnit, UnknownUnit>;
-type Rotation3 = Rot3D<f32, UnknownUnit, UnknownUnit>;
+pub type Rotation3 = Rot3D<f32, UnknownUnit, UnknownUnit>;
 
 pub const UP_2D: Vector2 = Vector2::new(0.0, -1.0);
 pub const DOWN_2D: Vector2 = Vector2::new(0.0, 1.0);
@@ -195,7 +195,7 @@ impl Rotation2D {
 // -----------------------------------------------------------------------------
 
 // Get the X, Y and Z direction from a transform
-fn transform_to_x_y_z_direction(trans: Transform3) -> (Vector3, Vector3, Vector3) {
+pub fn transform_to_x_y_z_direction(trans: Transform3) -> (Vector3, Vector3, Vector3) {
     let cols = trans.to_column_arrays();
     let v1 = Vector3::new(cols[0][0], cols[0][1], cols[0][2]);
     let v2 = Vector3::new(cols[1][0], cols[1][1], cols[1][2]);
@@ -227,8 +227,8 @@ impl Rotation3D {
         }
 
         unsafe {
-            let current_rot = self.owner.get_rotation();
-            let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
+            // let current_rot = self.owner.get_rotation();
+            // let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
 
             let angle = Angle::radians(look_dir.x.atan2(look_dir.z));
             let new_rot = Rotation3::around_y(angle);

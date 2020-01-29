@@ -41,6 +41,7 @@
 //! }
 //! ```
 use gdnative::*;
+use gdnative::init::{Property, PropertyHint, PropertyUsage};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -69,8 +70,8 @@ impl<T: Eq + Hash> SoundBank<T> {
         }
     }
 
-    pub fn get(&self, key: T) -> Option<AudioStream> {
-        match self.inner.get(&key) {
+    pub fn get(&self, key: &T) -> Option<AudioStream> {
+        match self.inner.get(key) {
             Some(s) => Some(s.clone()),
             None => None,
         }
@@ -112,8 +113,7 @@ pub fn play_audio_stream(mut owner: Node, stream: AudioStream) {
 //     - Audio player -
 // -----------------------------------------------------------------------------
 /// Audio player node.
-#[derive(Debug, NativeClass)]
-#[inherit(AudioStreamPlayer)]
+/// Attach this script to an audio stream player, and it can be set to loop 
 pub struct AudioPlayer {
     should_loop: bool,
 }
@@ -167,5 +167,29 @@ impl AudioPlayer {
                 owner.queue_free();
             }
         }
+    }
+}
+
+impl NativeClass for AudioPlayer {
+    type Base = AudioStreamPlayer;
+    type UserData = user_data::MutexData<Self>;
+
+    fn class_name() -> &'static str {
+        "AudioPlayer"
+    }
+
+    fn init(owner: Self::Base) -> Self {
+        Self::_init(owner)
+    }
+
+    fn register_properties(builder: &init::ClassBuilder<Self>) {
+        builder.add_property(Property {
+            name: "Loop",
+            default: false,
+            hint: PropertyHint::None,
+            getter: |s: &Self| s.should_loop,
+            setter: |s: &mut Self, val| s.should_loop = val,
+            usage: PropertyUsage::DEFAULT,
+        });
     }
 }
