@@ -1,7 +1,7 @@
 use crate::{gd_err, gd_panic};
 use gdnative::{
-    Camera, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass, Node,
-    Node2D, Particles, Spatial, UserData, Variant,
+    Camera, Camera2D, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass,
+    Node, Node2D, Particles, Spatial, UserData, Variant,
 };
 
 pub trait NodeExt: GodotObject + Clone {
@@ -33,14 +33,12 @@ pub trait NodeExt: GodotObject + Clone {
         F: FnMut(&mut U, Self) -> T,
     {
         match Instance::<U>::try_from_base(self) {
-            Some(instance) => {
-                match instance.map_mut(f) {
-                    Ok(val) => val,
-                    Err(e) => {
-                        gd_panic!("{:?}", e);
-                    }
+            Some(instance) => match instance.map_mut(f) {
+                Ok(val) => val,
+                Err(e) => {
+                    gd_panic!("{:?}", e);
                 }
-            }
+            },
             None => {
                 gd_panic!("failed to get instance");
             }
@@ -72,6 +70,7 @@ macro_rules! node_ext {
 node_ext!(Node);
 node_ext!(Node2D);
 node_ext!(Camera);
+node_ext!(Camera2D);
 node_ext!(KinematicBody);
 node_ext!(KinematicBody2D);
 node_ext!(Particles);
