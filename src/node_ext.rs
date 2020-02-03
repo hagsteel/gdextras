@@ -1,13 +1,13 @@
-use crate::gd_err;
+use crate::{gd_err, gd_panic};
 use gdnative::{
-    Camera, GodotObject, Instance, MapMut, NativeClass, Node, UserData, Variant, KinematicBody,
-    Particles
+    Camera, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass, Node,
+    Node2D, Particles, Spatial, UserData, Variant,
 };
 
 pub trait NodeExt: GodotObject + Clone {
     fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U>;
 
-    fn instance_map<U, V, F, T>(&self, path: &str, f: F)
+    fn get_and_map<U, V, F, T>(&self, path: &str, f: F)
     where
         T: GodotObject + Clone,
         V: UserData<Target = U> + MapMut,
@@ -26,19 +26,24 @@ pub trait NodeExt: GodotObject + Clone {
         });
     }
 
-    fn with_script<U, V, F>(self, f: F)
+    fn with_script<T, U, V, F>(self, f: F) -> T
     where
         V: UserData<Target = U> + MapMut,
         U: NativeClass<Base = Self, UserData = V>,
-        F: FnMut(&mut U, Self),
+        F: FnMut(&mut U, Self) -> T,
     {
         match Instance::<U>::try_from_base(self) {
             Some(instance) => {
-                if let Err(e) = instance.map_mut(f) {
-                    gd_err!("{:?}", e);
+                match instance.map_mut(f) {
+                    Ok(val) => val,
+                    Err(e) => {
+                        gd_panic!("{:?}", e);
+                    }
                 }
             }
-            None => gd_err!("failed to get instance"),
+            None => {
+                gd_panic!("failed to get instance");
+            }
         }
     }
 
@@ -65,6 +70,9 @@ macro_rules! node_ext {
 }
 
 node_ext!(Node);
+node_ext!(Node2D);
 node_ext!(Camera);
 node_ext!(KinematicBody);
+node_ext!(KinematicBody2D);
 node_ext!(Particles);
+node_ext!(Spatial);

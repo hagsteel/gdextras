@@ -227,16 +227,19 @@ impl Rotation3D {
         }
 
         unsafe {
-            // let current_rot = self.owner.get_rotation();
-            // let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
+            let current_rot = self.owner.get_rotation();
+            let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
 
             let angle = Angle::radians(look_dir.x.atan2(look_dir.z));
             let new_rot = Rotation3::around_y(angle);
 
-            // Implement smooth rotation
+            // Smooth rotation
+            let rot_speed: f32 = 0.25;
+            let smooth_rot = cur_rot.slerp(&new_rot, rot_speed);
+            let new_transform = smooth_rot.to_transform();
 
             // Instant rotation
-            let new_transform = new_rot.to_transform();
+            // let new_transform = new_rot.to_transform();
 
             let (x, y, z) = transform_to_x_y_z_direction(new_transform);
 
