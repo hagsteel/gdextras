@@ -1,12 +1,10 @@
 use crate::{gd_err, gd_panic};
 use gdnative::{
     Camera, Camera2D, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass,
-    Node, Node2D, Particles, Spatial, UserData, Variant,
+    Node, Node2D, Particles, Spatial, UserData, Variant, Vector2
 };
 
 pub trait NodeExt: GodotObject + Clone {
-    fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U>;
-
     fn get_and_map<U, V, F, T>(&self, path: &str, f: F)
     where
         T: GodotObject + Clone,
@@ -46,6 +44,7 @@ pub trait NodeExt: GodotObject + Clone {
     }
 
     fn deferred(&mut self, func_name: &str, args: &[Variant]);
+    fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U>;
 }
 
 macro_rules! node_ext {
@@ -63,6 +62,7 @@ macro_rules! node_ext {
                     self.call_deferred(func_name.into(), args);
                 }
             }
+
         }
     };
 }
@@ -75,3 +75,24 @@ node_ext!(KinematicBody);
 node_ext!(KinematicBody2D);
 node_ext!(Particles);
 node_ext!(Spatial);
+
+
+pub trait NodeExt2D: GodotObject + Clone {
+    fn canvas_mouse_pos(&self) -> Vector2;
+}
+
+macro_rules! node_ext2d {
+    ($type: ident) => {
+        impl NodeExt2D for $type {
+            fn canvas_mouse_pos(&self) -> Vector2 {
+                unsafe {
+                    self.to_canvas_item().get_global_mouse_position()
+                }
+            }
+        }
+    };
+}
+
+node_ext2d!(Node2D);
+node_ext2d!(Camera2D);
+node_ext2d!(KinematicBody2D);
