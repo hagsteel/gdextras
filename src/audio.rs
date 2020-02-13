@@ -41,7 +41,6 @@
 //! }
 //! ```
 use gdnative::*;
-use gdnative::init::PropertyUsage;
 use std::collections::HashMap;
 use std::hash::Hash;
 

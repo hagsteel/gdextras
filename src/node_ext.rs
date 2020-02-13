@@ -1,30 +1,29 @@
-use crate::{gd_err, gd_panic};
+use crate::gd_err;
 use gdnative::{
     Camera, Camera2D, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass,
-    Node, Node2D, Particles, Spatial, UserData, Variant, Vector2
+    Node, Node2D, Particles, Spatial, UserData, Variant, Vector2, Label
 };
 
-pub trait NodeExt: GodotObject + Clone {
-    fn get_and_map<U, V, F, T>(&self, path: &str, f: F)
+pub trait NodeExt: GodotObject + Clone + std::fmt::Debug {
+    fn get_and_map<U, V, F, T, X>(&self, path: &str, f: F) -> Option<T>
     where
-        T: GodotObject + Clone,
+        X: GodotObject + Clone,
         V: UserData<Target = U> + MapMut,
-        U: NativeClass<Base = T, UserData = V>,
-        F: FnMut(&mut U, T),
+        U: NativeClass<Base = X, UserData = V>,
+        F: FnMut(&mut U, X) -> T,
     {
-        self.get_and_cast::<U::Base>(path.into()).map(|node| {
-            match Instance::<U>::try_from_base(node) {
-                Some(instance) => {
-                    if let Err(e) = instance.map_mut(f) {
-                        gd_err!("{:?}", e);
-                    }
-                }
-                None => gd_err!("failed to get instance"),
+        let node = self.get_and_cast::<U::Base>(path.into())?;
+        let instance = Instance::<U>::try_from_base(node)?;
+        match instance.map_mut(f) {
+            Ok(val) => Some(val),
+            Err(e) => {
+                gd_err!("{:?}", e);
+                None
             }
-        });
+        }
     }
 
-    fn with_script<T, U, V, F>(self, f: F) -> T
+    fn with_script<T, U, V, F>(self, f: F) -> Option<T>
     where
         V: UserData<Target = U> + MapMut,
         U: NativeClass<Base = Self, UserData = V>,
@@ -32,14 +31,13 @@ pub trait NodeExt: GodotObject + Clone {
     {
         match Instance::<U>::try_from_base(self) {
             Some(instance) => match instance.map_mut(f) {
-                Ok(val) => val,
+                Ok(val) => Some(val),
                 Err(e) => {
-                    gd_panic!("{:?}", e);
+                    gd_err!("{:?}", e);
+                    None
                 }
             },
-            None => {
-                gd_panic!("failed to get instance");
-            }
+            None => None,
         }
     }
 
@@ -75,6 +73,7 @@ node_ext!(KinematicBody);
 node_ext!(KinematicBody2D);
 node_ext!(Particles);
 node_ext!(Spatial);
+node_ext!(Label);
 
 
 pub trait NodeExt2D: GodotObject + Clone {
@@ -96,3 +95,4 @@ macro_rules! node_ext2d {
 node_ext2d!(Node2D);
 node_ext2d!(Camera2D);
 node_ext2d!(KinematicBody2D);
+node_ext2d!(Label);

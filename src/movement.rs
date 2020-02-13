@@ -1,6 +1,5 @@
 use gdnative::{
     KinematicBody, KinematicBody2D, KinematicCollision2D, Node2D, Spatial, Vector2, Vector3,
-    Viewport
 };
 
 use euclid::{Transform3D, UnknownUnit, Angle};
@@ -206,18 +205,13 @@ pub fn transform_to_x_y_z_direction(trans: Transform3) -> (Vector3, Vector3, Vec
 
 pub struct Rotation3D {
     owner: Spatial,
-    look_at_vec: Vector3,
 }
 
-fn vec2_to_3(vec2: Vector2, vec3: Vector3) -> Vector3 {
-    Vector3::new(vec2.x, 0.0, vec2.y) + vec3
-}
 
 impl Rotation3D {
     pub fn new(owner: Spatial) -> Self {
         Self {
             owner,
-            look_at_vec: Vector3::zero(),
         }
     }
 
