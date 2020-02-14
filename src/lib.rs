@@ -1,20 +1,20 @@
 #![allow(unused_parens)]
-pub mod input;
-pub mod movement;
-pub mod mouse;
-pub mod audio;
-pub mod scene_loader;
-pub mod node_ext;
 pub mod animation;
+pub mod audio;
+pub mod input;
+pub mod mouse;
+pub mod movement;
+pub mod node_ext;
+pub mod scene_loader;
 
 #[macro_export]
-macro_rules! gd_unimplemented { 
-    () => ({
+macro_rules! gd_unimplemented {
+    () => {{
         let line = std::line!();
         let file = std::file!();
         gdnative::godot_print!("{}:{} Rust: unimplemented!", file, line);
         std::unimplemented!()
-    });
+    }};
 }
 
 #[macro_export]
@@ -27,6 +27,15 @@ macro_rules! gd_err {
     });
 }
 
+#[macro_export]
+macro_rules! gdp {
+    ($($arg:tt)*) => ({
+        let line = std::line!();
+        let file = std::file!();
+        let val: String = format!($($arg)*);
+        gdnative::godot_print!("{}:{} {}", file, line, val);
+    });
+}
 
 #[macro_export]
 macro_rules! gd_panic {

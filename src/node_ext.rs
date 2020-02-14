@@ -1,7 +1,7 @@
 use crate::gd_err;
 use gdnative::{
-    Camera, Camera2D, GodotObject, Instance, KinematicBody, KinematicBody2D, MapMut, NativeClass,
-    Node, Node2D, Particles, Spatial, UserData, Variant, Vector2, Label
+    Camera, Camera2D, Control, GodotObject, Instance, KinematicBody, KinematicBody2D, Label,
+    MapMut, NativeClass, Node, Node2D, Particles, Spatial, UserData, Variant, Vector2, Viewport,
 };
 
 pub trait NodeExt: GodotObject + Clone + std::fmt::Debug {
@@ -43,6 +43,10 @@ pub trait NodeExt: GodotObject + Clone + std::fmt::Debug {
 
     fn deferred(&mut self, func_name: &str, args: &[Variant]);
     fn get_and_cast<U: GodotObject>(&self, path: &str) -> Option<U>;
+
+    fn root(&self) -> Viewport {
+        self.get_and_cast::<Viewport>("/root").unwrap()
+    }
 }
 
 macro_rules! node_ext {
@@ -60,7 +64,6 @@ macro_rules! node_ext {
                     self.call_deferred(func_name.into(), args);
                 }
             }
-
         }
     };
 }
@@ -74,7 +77,7 @@ node_ext!(KinematicBody2D);
 node_ext!(Particles);
 node_ext!(Spatial);
 node_ext!(Label);
-
+node_ext!(Control);
 
 pub trait NodeExt2D: GodotObject + Clone {
     fn canvas_mouse_pos(&self) -> Vector2;
@@ -84,9 +87,7 @@ macro_rules! node_ext2d {
     ($type: ident) => {
         impl NodeExt2D for $type {
             fn canvas_mouse_pos(&self) -> Vector2 {
-                unsafe {
-                    self.to_canvas_item().get_global_mouse_position()
-                }
+                unsafe { self.to_canvas_item().get_global_mouse_position() }
             }
         }
     };
@@ -95,4 +96,5 @@ macro_rules! node_ext2d {
 node_ext2d!(Node2D);
 node_ext2d!(Camera2D);
 node_ext2d!(KinematicBody2D);
+node_ext2d!(Control);
 node_ext2d!(Label);
