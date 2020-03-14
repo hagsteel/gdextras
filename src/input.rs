@@ -10,7 +10,7 @@ pub trait InputExt {
         self.strength(key) * multiplier
     }
 
-    fn pressed(&self, key: &str) -> bool;
+    fn action_pressed(&self, key: &str) -> bool;
 }
 
 impl InputExt for Input {
@@ -18,7 +18,7 @@ impl InputExt for Input {
         self.get_action_strength(key.into()) as f32
     }
 
-    fn pressed(&self, key: &str) -> bool {
+    fn action_pressed(&self, key: &str) -> bool {
         self.is_action_pressed(key.into())
     }
 }
@@ -33,9 +33,9 @@ pub trait InputEventExt {
         self.strength(key) * multiplier
     }
 
-    fn pressed(&self, key: &str) -> bool;
+    fn action_pressed(&self, key: &str) -> bool;
 
-    fn released(&self, key: &str) -> bool;
+    fn action_released(&self, key: &str) -> bool;
 }
 
 impl InputEventExt for InputEvent {
@@ -43,11 +43,11 @@ impl InputEventExt for InputEvent {
         self.get_action_strength(key.into()) as f32
     }
 
-    fn pressed(&self, key: &str) -> bool {
+    fn action_pressed(&self, key: &str) -> bool {
         self.is_action_pressed(key.into(), false)
     }
 
-    fn released(&self, key: &str) -> bool {
+    fn action_released(&self, key: &str) -> bool {
         self.is_action_released(key.into())
     }
 }
