@@ -81,6 +81,7 @@ node_ext!(Control);
 
 pub trait NodeExt2D: GodotObject + Clone {
     fn canvas_mouse_pos(&self) -> Vector2;
+    fn global_mouse_pos(&self) -> Vector2;
 }
 
 macro_rules! node_ext2d {
@@ -88,6 +89,10 @@ macro_rules! node_ext2d {
         impl NodeExt2D for $type {
             fn canvas_mouse_pos(&self) -> Vector2 {
                 unsafe { self.to_canvas_item().get_global_mouse_position() }
+            }
+
+            fn global_mouse_pos(&self) -> Vector2 {
+                unsafe { self.get_global_mouse_position() }
             }
         }
     };
