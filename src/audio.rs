@@ -52,6 +52,7 @@ pub struct SoundBank<T> {
 }
 
 unsafe impl<T> Send for SoundBank<T> {}
+unsafe impl<T> Sync for SoundBank<T> {}
 
 impl<T: Eq + Hash> SoundBank<T> {
     pub fn insert(&mut self, key: T, path: &str) {
