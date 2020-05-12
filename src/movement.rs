@@ -136,7 +136,7 @@ impl Move3D for KinematicBody {
 
     fn apply_gravity(&self, gravity: f32, velocity: &mut Vector3) {
         if !unsafe { self.is_on_floor() } {
-            velocity.y += 1.0 * gravity;
+            velocity.y += gravity;
         }
     }
 }
