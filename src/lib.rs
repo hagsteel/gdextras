@@ -6,7 +6,6 @@ pub mod mouse;
 pub mod movement;
 pub mod node_ext;
 pub mod scene_loader;
-pub mod camera;
 
 #[macro_export]
 macro_rules! gd_unimplemented {
