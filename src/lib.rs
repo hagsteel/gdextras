@@ -1,11 +1,10 @@
-#![allow(unused_parens)]
 pub mod animation;
-pub mod audio;
+// pub mod audio;
 pub mod input;
 pub mod mouse;
 pub mod movement;
 pub mod node_ext;
-pub mod scene_loader;
+// pub mod scene_loader;
 
 #[macro_export]
 macro_rules! gd_unimplemented {

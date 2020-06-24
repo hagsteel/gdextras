@@ -1,9 +1,8 @@
-use gdnative::{
-    KinematicBody, KinematicBody2D, KinematicCollision2D, Node2D, Spatial, Vector2, Vector3,
-};
+use gdnative::api::{KinematicBody, KinematicBody2D, KinematicCollision2D, Node2D};
+use gdnative::{Ref, Vector2, Vector3};
 
-use euclid::{Transform3D, UnknownUnit, Angle};
 use euclid::Rotation3D as Rot3D;
+use euclid::{Transform3D, UnknownUnit};
 
 type Transform3 = Transform3D<f32, UnknownUnit, UnknownUnit>;
 pub type Rotation3 = Rot3D<f32, UnknownUnit, UnknownUnit>;
@@ -32,24 +31,27 @@ pub const UP_3D: Vector3 = Vector3::new(0.0, -1.0, 0.0);
 /// }
 pub trait Move2D {
     /// Default implementation of move_and_slide.
-    fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2;
+    fn move_and_slide_default(&self, velocity: Vector2, up: Vector2) -> Vector2;
 
     // Default implementation for move_and_slide_with_snap
     fn move_and_slide_with_snap_default(
-        &mut self,
+        &self,
         velocity: Vector2,
         snap: Vector2,
         up: Vector2,
     ) -> Vector2;
 
     /// Default implementation of move_and_collide.
-    fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D>;
+    fn move_and_collide_default(&self, velocity: Vector2) -> Option<Ref<KinematicCollision2D>>;
 }
 
 /// Move and slide for 3D nodes
 pub trait Move3D {
     /// Default implementation of move_and_slide.
-    fn move_and_slide_default(&mut self, velocity: Vector3, up: Vector3) -> Vector3;
+    fn move_and_slide_default(&self, velocity: Vector3, up: Vector3) -> Vector3;
+
+    /// Default implementation of move_and_slide.
+    fn move_and_collide_default(&self, velocity: Vector3);
 
     /// Apply gravity
     fn apply_gravity(&self, gravity: f32, velocity: &mut Vector3);
@@ -59,56 +61,54 @@ pub trait Move3D {
 //     - Kinetmatic body 2D -
 // -----------------------------------------------------------------------------
 impl Move2D for KinematicBody2D {
-    fn move_and_slide_default(&mut self, velocity: Vector2, up: Vector2) -> Vector2 {
-        unsafe {
-            let stop_on_slope = false;
-            let max_slides = 4;
-            let floor_max_angle = 0.785398;
-            let infinite_inertia = true;
+    fn move_and_slide_default(&self, velocity: Vector2, up: Vector2) -> Vector2 {
+        let stop_on_slope = false;
+        let max_slides = 4;
+        let floor_max_angle = 0.785398;
+        let infinite_inertia = true;
 
-            self.move_and_slide(
-                velocity,
-                up,
-                stop_on_slope,
-                max_slides,
-                floor_max_angle,
-                infinite_inertia,
-            )
-        }
+        self.move_and_slide(
+            velocity,
+            up,
+            stop_on_slope,
+            max_slides,
+            floor_max_angle,
+            infinite_inertia,
+        )
     }
 
     fn move_and_slide_with_snap_default(
-        &mut self,
+        &self,
         velocity: Vector2,
         snap: Vector2,
         up: Vector2,
     ) -> Vector2 {
-        unsafe {
-            let stop_on_slope = false;
-            let max_slides = 4;
-            let floor_max_angle = 0.785398;
-            let infinite_inertia = true;
+        let stop_on_slope = false;
+        let max_slides = 4;
+        let floor_max_angle = 0.785398;
+        let infinite_inertia = true;
 
-            self.move_and_slide_with_snap(
-                velocity,
-                snap,
-                up,
-                stop_on_slope,
-                max_slides,
-                floor_max_angle,
-                infinite_inertia,
-            )
-        }
+        self.move_and_slide_with_snap(
+            velocity,
+            snap,
+            up,
+            stop_on_slope,
+            max_slides,
+            floor_max_angle,
+            infinite_inertia,
+        )
     }
 
-    fn move_and_collide_default(&mut self, velocity: Vector2) -> Option<KinematicCollision2D> {
-        unsafe {
-            self.move_and_collide(
-                velocity, true,  // infinite intertia
-                true,  // exclude raycsat shapes
-                false, // test only
-            )
-        }
+    fn move_and_collide_default(&self, velocity: Vector2) -> Option<Ref<KinematicCollision2D>> {
+        let infinite_inertia = true;
+        let exclude_raycast_shapes = true;
+        let test_only = false;
+        self.move_and_collide(
+            velocity,
+            infinite_inertia,
+            exclude_raycast_shapes,
+            test_only,
+        )
     }
 }
 
@@ -116,26 +116,37 @@ impl Move2D for KinematicBody2D {
 //     - Kinetmatic body 3D -
 // -----------------------------------------------------------------------------
 impl Move3D for KinematicBody {
-    fn move_and_slide_default(&mut self, velocity: Vector3, up: Vector3) -> Vector3 {
-        unsafe {
-            let stop_on_slope = false;
-            let max_slides = 4;
-            let floor_max_angle = 0.785398;
-            let infinite_inertia = true;
+    fn move_and_slide_default(&self, velocity: Vector3, up: Vector3) -> Vector3 {
+        let stop_on_slope = false;
+        let max_slides = 4;
+        let floor_max_angle = 0.785398;
+        let infinite_inertia = true;
 
-            self.move_and_slide(
-                velocity,
-                up,
-                stop_on_slope,
-                max_slides,
-                floor_max_angle,
-                infinite_inertia,
-            )
-        }
+        self.move_and_slide(
+            velocity,
+            up,
+            stop_on_slope,
+            max_slides,
+            floor_max_angle,
+            infinite_inertia,
+        )
+    }
+
+    fn move_and_collide_default(&self, velocity: Vector3) {
+        //Vector3 rel_vec, bool infinite_inertia=true, bool exclude_raycast_shapes=true, bool test_only=false
+        let infinite_inertia = true;
+        let exclude_raycast_shapes = true;
+        let test_only = false;
+        self.move_and_collide(
+            velocity,
+            infinite_inertia,
+            exclude_raycast_shapes,
+            test_only,
+        );
     }
 
     fn apply_gravity(&self, gravity: f32, velocity: &mut Vector3) {
-        if !unsafe { self.is_on_floor() } {
+        if !self.is_on_floor() {
             velocity.y += gravity;
         }
     }
@@ -164,20 +175,18 @@ impl Rotation2D {
         }
     }
 
-    pub fn set_rotation(&mut self, left: f32, right: f32, up: f32, down: f32) {
-        let dir = Vector2::new(-left + right, -up + down);
-        if dir == Vector2::zero() {
-            self.aim_direction = None;
-            return;
-        }
-        self.aim_direction = Some(dir);
-    }
+    // pub fn set_rotation(&self, left: f32, right: f32, up: f32, down: f32) {
+    //     let dir = Vector2::new(-left + right, -up + down);
+    //     if dir == Vector2::zero() {
+    //         self.aim_direction = None;
+    //         return;
+    //     }
+    //     self.aim_direction = Some(dir);
+    // }
 
     pub fn follow_mouse(&mut self) {
-        unsafe {
-            let mouse_pos = self.owner.get_global_mouse_position();
-            self.owner.look_at(mouse_pos);
-        }
+        let mouse_pos = self.owner.get_global_mouse_position();
+        self.owner.look_at(mouse_pos);
     }
 
     pub unsafe fn update_rotation(&mut self) -> Option<()> {
@@ -203,46 +212,45 @@ pub fn transform_to_x_y_z_direction(trans: Transform3) -> (Vector3, Vector3, Vec
     (v1, v2, v3)
 }
 
-pub struct Rotation3D {
-    owner: Spatial,
-}
+// pub struct Rotation3D {
+//     owner: Spatial,
+// }
 
+// impl Rotation3D {
+//     pub fn new(owner: Spatial) -> Self {
+//         Self {
+//             owner,
+//         }
+//     }
 
-impl Rotation3D {
-    pub fn new(owner: Spatial) -> Self {
-        Self {
-            owner,
-        }
-    }
+//     pub fn look_dir(&mut self, look_dir: Vector3) {
+//         if look_dir == Vector3::zero() {
+//             return
+//         }
 
-    pub fn look_dir(&mut self, look_dir: Vector3) {
-        if look_dir == Vector3::zero() {
-            return
-        }
+//         unsafe {
+//             let current_rot = self.owner.get_rotation();
+//             let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
 
-        unsafe {
-            let current_rot = self.owner.get_rotation();
-            let cur_rot = Rotation3::around_y(Angle::radians(current_rot.y));
+//             let angle = Angle::radians(look_dir.x.atan2(look_dir.z));
+//             let new_rot = Rotation3::around_y(angle);
 
-            let angle = Angle::radians(look_dir.x.atan2(look_dir.z));
-            let new_rot = Rotation3::around_y(angle);
+//             // Smooth rotation
+//             let rot_speed: f32 = 0.25;
+//             let smooth_rot = cur_rot.slerp(&new_rot, rot_speed);
+//             let new_transform = smooth_rot.to_transform();
 
-            // Smooth rotation
-            let rot_speed: f32 = 0.25;
-            let smooth_rot = cur_rot.slerp(&new_rot, rot_speed);
-            let new_transform = smooth_rot.to_transform();
+//             // Instant rotation
+//             // let new_transform = new_rot.to_transform();
 
-            // Instant rotation
-            // let new_transform = new_rot.to_transform();
+//             let (x, y, z) = transform_to_x_y_z_direction(new_transform);
 
-            let (x, y, z) = transform_to_x_y_z_direction(new_transform);
+//             let mut current_transform = self.owner.get_transform();
+//             current_transform.basis.elements[0] = x;
+//             current_transform.basis.elements[1] = y;
+//             current_transform.basis.elements[2] = z;
 
-            let mut current_transform = self.owner.get_transform();
-            current_transform.basis.elements[0] = x;
-            current_transform.basis.elements[1] = y;
-            current_transform.basis.elements[2] = z;
-
-            self.owner.set_transform(current_transform);
-        }
-    }
-}
+//             self.owner.set_transform(current_transform);
+//         }
+//     }
+// }

@@ -1,4 +1,4 @@
-use gdnative::AnimationPlayer;
+use gdnative::api::AnimationPlayer;
 
 pub trait AnimationPlayerExt {
     fn play_default(&mut self, animation_name: &str);
@@ -6,6 +6,6 @@ pub trait AnimationPlayerExt {
 
 impl AnimationPlayerExt for AnimationPlayer {
     fn play_default(&mut self, animation_name: &str) {
-        unsafe { self.play(animation_name.into(), -1., 1., false) }
+        self.play(animation_name.into(), -1., 1., false)
     }
 }

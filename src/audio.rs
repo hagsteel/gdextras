@@ -40,7 +40,12 @@
 //!     }
 //! }
 //! ```
-use gdnative::*;
+use gdnative::api::{AudioStream, AudioStreamPlayer, ResourceLoader};
+use gdnative::VariantArray;
+use gdnative::api::{
+    godot_error, godot_wrap_method, godot_wrap_method_inner, godot_wrap_method_parameter_count,
+    methods, NativeClass, InputEvent
+};
 use std::collections::HashMap;
 use std::hash::Hash;
 

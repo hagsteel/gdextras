@@ -1,4 +1,4 @@
-use gdnative::{Input, InputEvent};
+use gdnative::api::{Input, InputEvent};
 
 // -----------------------------------------------------------------------------
 //     - Input extension -
